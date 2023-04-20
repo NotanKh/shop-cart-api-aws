@@ -16,13 +16,18 @@ export class CartService {
   findByUserId(userId: string): Promise<Cart> {
     return this.cartRepository.findOne({
       where: { user_id: userId },
-      relations: ['items'],
+      relations: { items: true },
+      select: {
+        id: true,
+        items: true,
+      },
     });
   }
 
-  createByUserId(userId: string): Promise<Cart> {
+  async createByUserId(userId: string): Promise<Cart> {
     const cart = this.cartRepository.create({ user_id: userId });
-    return this.cartRepository.save(cart);
+    await this.cartRepository.save(cart);
+    return this.findByUserId(userId);
   }
 
   async findOrCreateByUserId(userId: string): Promise<Cart> {
@@ -36,11 +41,11 @@ export class CartService {
   }
 
   async updateByUserId(userId: string, { items }: Cart): Promise<Cart> {
-    const { id, ...rest } = await this.findOrCreateByUserId(userId);
+    const { id } = await this.findOrCreateByUserId(userId);
 
-    const cartItems = await this.cartItemService.updateItemsByCart(id, items);
+    await this.cartItemService.updateItemsByCart(id, items);
 
-    return { id, ...rest, items: cartItems };
+    return await this.findByUserId(userId);
   }
 
   async removeByUserId(userId): Promise<void> {

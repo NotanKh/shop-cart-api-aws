@@ -14,6 +14,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     AuthModule,
     CartModule,
     OrderModule,
+    ConfigModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
